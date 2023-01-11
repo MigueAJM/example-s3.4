@@ -1,0 +1,12 @@
+CRUD USUARIOS
+step 1.- Generar una base de datos 
+step 2.- Crea tabla de usuarios
+        * id
+        * firstname
+        * lastname
+        * username
+        * email
+        * password
+        * active
+step 3.- generarte Bundle de usuarios
+step 4.- Generar para las consultas a la base de datos y su respectivo controlador

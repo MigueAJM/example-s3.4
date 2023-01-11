@@ -1,13 +1,23 @@
+{% set path_bootstrap = 'resources/bootstrap/dist/' %}
+
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8" />
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        {% block stylesheets %}{% endblock %}
-        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-        {% block javascripts %}{% endblock %}
-    </body>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>
+			{% block title %}Welcome!
+			{% endblock %}
+		</title>
+		<link rel="stylesheet" href="{{ asset(path_bootstrap ~ 'css/bootstrap.min.css') }}">
+		{% block stylesheets %}
+			{#  #}
+		{% endblock %}
+		<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}"/>
+	</head>
+	<body>
+		{% block body %}{% endblock %}
+		{% block javascripts %}
+			<script src="{{ asset(path_bootstrap ~ 'js/bootstrap.min.css') }}"></script>
+		{% endblock %}
+	</body>
 </html>

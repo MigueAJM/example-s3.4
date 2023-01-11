@@ -13,4 +13,9 @@
 		</div>
 	</div>
 {% endblock %}
-{% block javascripts %}{% endblock %}
+{% block javascripts %}
+	<script>
+		const path_to_login = "{{ path('authentication_to_login') }}"
+	</script>
+	<script src="{{ asset('resources/js/Authentication/authentication.js')}}"></script>
+{% endblock %}

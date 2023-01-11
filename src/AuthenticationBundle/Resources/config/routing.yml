@@ -1,3 +1,9 @@
 authentication_homepage:
     path:     /
     defaults: { _controller: AuthenticationBundle:Default:index }
+
+authentication_to_login:
+    path:     /to-login
+    defaults: { _controller: AuthenticationBundle:Default:toLogin }
+    requirements:
+        _method:  POST

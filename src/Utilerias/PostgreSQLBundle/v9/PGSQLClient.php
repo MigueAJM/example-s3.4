@@ -57,23 +57,25 @@ use Utilerias\EmailBundle\Model\EmailModel;
 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_WARNING);
 ini_set('memory_limit', '128M');
 
-class PGSQLClient {
+class PGSQLClient
+{
 
     private $conn;
     private $container;
-    private $required_parameter_values = Array("name", "value");
-    private $required_associate_value = Array("operator");
-    private $db_config_parameters = Array("db_name", "db_schema", "db_user", "db_password", "db_server", "db_port");
-    private $associate = Array("columns" => FALSE, "values" => FALSE, "set" => FALSE, "where" => FALSE);
-    private $invalid_parameter_chars = Array("\"", ".", "->", ">", "'");
+    private $required_parameter_values = array("name", "value");
+    private $required_associate_value = array("operator");
+    private $db_config_parameters = array("db_name", "db_schema", "db_user", "db_password", "db_server", "db_port");
+    private $associate = array("columns" => FALSE, "values" => FALSE, "set" => FALSE, "where" => FALSE);
+    private $invalid_parameter_chars = array("\"", ".", "->", ">", "'");
 
     /**
      * Creates a PGSQLClient instance
      * @param string $db
      */
-    public function __construct($db_data = NULL) {
+    public function __construct($db_data = NULL)
+    {
         if (!$db_data) {
-            $db_prefix = "PGSQL_SAS";
+            $db_prefix = "pgsql";
             $this->container = new ContainerBuilder();
             $loader = new YamlFileLoader($this->container, new FileLocator(__DIR__ . "/../../../../app/config"));
             $loader->load('parameters.yml');
@@ -91,12 +93,13 @@ class PGSQLClient {
      * @param string $db_prefix 
      * @return void
      */
-    private function setDBConfigByContainerParameter($db_data = "") {
+    private function setDBConfigByContainerParameter($db_data = "")
+    {
         /* if (!is_string($db_prefix) || $db_prefix === "") {
           throw new \Exception("You must to specify a DataBase Prefix to Connect with PostgreSQL");
           }
           $db_data = $this->container->getParameter($db_prefix); */
-        $this->conn = Array("db_info" => $db_data, "conn_object" => NULL, "statement_object" => NULL, "query" => Array("string" => "", "parameters" => Array()));
+        $this->conn = array("db_info" => $db_data, "conn_object" => NULL, "statement_object" => NULL, "query" => array("string" => "", "parameters" => array()));
     }
 
     /**
@@ -104,7 +107,8 @@ class PGSQLClient {
      * @param array $db_config 
      * @return void
      */
-    public function updateDBConfig(array $db_config = Array()) {
+    public function updateDBConfig(array $db_config = array())
+    {
         if (!is_array($db_config) && COUNT($db_config) == 0) {
             throw new \Exception("You must to specify a valid DataBase Cofig to Update Main Config");
         }
@@ -125,7 +129,8 @@ class PGSQLClient {
      * db_server
      * db_port
      */
-    public function getDBConfig() {
+    public function getDBConfig()
+    {
         return $this->conn["db_info"];
     }
 
@@ -135,24 +140,26 @@ class PGSQLClient {
      * status (TRUE, FALSE)
      * error (string with last error)
      */
-    private function connect() {
+    private function connect()
+    {
         $this->conn["conn_string"] = "pgsql:host={$this->conn["db_info"]['db_server']};dbname={$this->conn["db_info"]["db_name"]};port={$this->conn["db_info"]['db_port']}";
         try {
             $this->conn["conn_object"] = new \PDO($this->conn["conn_string"], $this->conn["db_info"]['db_user'], $this->conn["db_info"]['db_password']);
-            return Array("status" => TRUE, "error" => "");
+            return array("status" => TRUE, "error" => "");
         } catch (\PDOException $e) {
-            return Array("status" => FALSE, "error" => $e->getMessage());
+            return array("status" => FALSE, "error" => $e->getMessage());
         }
     }
 
     /**
      * Close connection to Postgres DataBase server
      */
-    private function closeConn() {
+    private function closeConn()
+    {
         //$this->conn["query"] = Array("string" => "", "parameters" => Array());
         $this->conn["conn_object"] = NULL;
         $this->conn["statement_object"] = NULL;
-        $this->associate = Array("columns" => FALSE, "values" => FALSE, "set" => FALSE, "where" => FALSE);
+        $this->associate = array("columns" => FALSE, "values" => FALSE, "set" => FALSE, "where" => FALSE);
     }
 
     /**
@@ -162,18 +169,20 @@ class PGSQLClient {
      * status (TRUE, FALSE)
      * error (string with last error)
      */
-    public function setQuery($query = "") {
+    public function setQuery($query = "")
+    {
         if (!is_string($query) || $query == "" || $query == NULL) {
-            return Array("status" => FALSE, "error" => "You must to specify a valid Query String");
+            return array("status" => FALSE, "error" => "You must to specify a valid Query String");
         }
         $this->conn["query"]["string"] = $query;
-        return Array("status" => TRUE, "error" => "");
+        return array("status" => TRUE, "error" => "");
     }
 
     /**
      * Get Query String 
      */
-    public function getQuery() {
+    public function getQuery()
+    {
         return $this->conn["query"]["string"];
     }
 
@@ -182,7 +191,8 @@ class PGSQLClient {
      * @param array $value
      * @return \PDO::PARAM_TYPE
      */
-    public function getParameterType($value = "") {
+    public function getParameterType($value = "")
+    {
         switch (gettype($value)) {
             case "boolean":
                 return \PDO::PARAM_BOOL;
@@ -204,42 +214,43 @@ class PGSQLClient {
      * status (TRUE, FALSE)
      * error (string with last error)
      */
-    public function setQueryParameters(array $parameters = Array()) {
+    public function setQueryParameters(array $parameters = array())
+    {
 
         if ($this->conn["query"]["string"] == "") {
-            return Array("status" => FALSE, "error" => "You must to specify a Query String before Set Parameters");
+            return array("status" => FALSE, "error" => "You must to specify a Query String before Set Parameters");
         }
 
         if (!is_array($parameters)) {
-            return Array("status" => FALSE, "error" => "You must to specify a valid Query Parameters Array");
+            return array("status" => FALSE, "error" => "You must to specify a valid Query Parameters Array");
         }
 
-        $this->conn["query"]["parameters"] = Array();
+        $this->conn["query"]["parameters"] = array();
 
         $this->associate["set"] = strpos($this->conn["query"]["string"], "{set}") ? TRUE : FALSE;
         if ($this->associate["set"]) {
             if (!array_key_exists("set", $parameters) || COUNT($parameters["set"]) == 0) {
-                return Array("status" => FALSE, "error" => "You must to especify <b>'set'</b> sub-arrays into parameters AND it needs to have at least one element");
+                return array("status" => FALSE, "error" => "You must to especify <b>'set'</b> sub-arrays into parameters AND it needs to have at least one element");
             }
 
-            $this->conn["query"]["parameters"]["set"] = Array();
+            $this->conn["query"]["parameters"]["set"] = array();
             foreach ($parameters["set"] as $parameter) {
                 foreach ($this->required_parameter_values as $required_value) {
                     if (!array_key_exists($required_value, $parameter)) {
-                        return Array("status" => FALSE, "error" => "Update Parameter: $parameter is missing: <b>$required_value</b>");
+                        return array("status" => FALSE, "error" => "Update Parameter: $parameter is missing: <b>$required_value</b>");
                     }
                 }
                 array_push($this->conn["query"]["parameters"]["set"], $parameter);
             }
         } else {
             if (array_key_exists("set", $parameters)) {
-                return Array("status" => FALSE, "error" => "You must to specify <b>{set}</b> label inside Query String because a <b>'set'</b> sub-array was specified into parameters");
+                return array("status" => FALSE, "error" => "You must to specify <b>{set}</b> label inside Query String because a <b>'set'</b> sub-array was specified into parameters");
             }
         }
 
         $this->associate["where"] = strpos($this->conn["query"]["string"], "{where}") ? TRUE : FALSE;
         if ($this->associate["where"]) {
-            $this->conn["query"]["parameters"]["where"] = Array();
+            $this->conn["query"]["parameters"]["where"] = array();
 
             if (!array_key_exists("where", $parameters) || COUNT($parameters["where"]) == 0) {
                 //return Array("status" => FALSE, "error" => "You must to especify <b>'where'</b> sub-arrays into parameters AND it needs to have at least one element");
@@ -248,7 +259,7 @@ class PGSQLClient {
                     foreach ($this->required_parameter_values as $required_value) {
                         if (!array_key_exists($required_value, $parameter)) {
                             $parameter_name = array_key_exists("name", $parameter) ? $parameter["name"] : "undefined";
-                            return Array("status" => FALSE, "error" => "Condition Parameter <b>$parameter_name</b> is missing: <b>$required_value</b>");
+                            return array("status" => FALSE, "error" => "Condition Parameter <b>$parameter_name</b> is missing: <b>$required_value</b>");
                         }
                     }
                     array_push($this->conn["query"]["parameters"]["where"], $parameter);
@@ -256,7 +267,7 @@ class PGSQLClient {
             }
         } else {
             if (array_key_exists("where", $parameters)) {
-                return Array("status" => FALSE, "error" => "You must to specify <b>{where}</b> label inside the Query String because a <b>'where'</b> sub-array was specified into parameters");
+                return array("status" => FALSE, "error" => "You must to specify <b>{where}</b> label inside the Query String because a <b>'where'</b> sub-array was specified into parameters");
             }
         }
 
@@ -267,23 +278,23 @@ class PGSQLClient {
 
             if ($this->associate["columns"] && !$this->associate["values"]) {
                 //no {values} specified
-                return Array("status" => FALSE, "error" => "You must to specify <b>{values}</b> label inside the Query String because a <b>{columns}</b> was specified");
+                return array("status" => FALSE, "error" => "You must to specify <b>{values}</b> label inside the Query String because a <b>{columns}</b> was specified");
             } elseif (!$this->associate["columns"] && $this->associate["values"]) {
                 //no {columns} specified
-                return Array("status" => FALSE, "error" => "You must to specify <b>{columns}</b> label inside the Query String because a <b>{values}</b> was specified");
+                return array("status" => FALSE, "error" => "You must to specify <b>{columns}</b> label inside the Query String because a <b>{values}</b> was specified");
             } elseif ($this->associate["columns"] && $this->associate["values"]) {
                 if (COUNT($parameters) == 0) {
-                    return Array("status" => FALSE, "error" => "You must to specify at least one element in the Query Parameters");
+                    return array("status" => FALSE, "error" => "You must to specify at least one element in the Query Parameters");
                 }
 
-                $this->conn["query"]["parameters"]["columns"] = Array();
-                $this->conn["query"]["parameters"]["values"] = Array();
+                $this->conn["query"]["parameters"]["columns"] = array();
+                $this->conn["query"]["parameters"]["values"] = array();
 
                 foreach ($parameters as $parameter) {
                     foreach ($this->required_parameter_values as $required_value) {
                         if (!array_key_exists($required_value, $parameter)) {
                             $parameter_name = array_key_exists("name", $parameter) ? $parameter["name"] : "undefined";
-                            return Array("status" => FALSE, "error" => "Condition Parameter <b>$parameter_name</b> is missing: <b>$required_value</b>");
+                            return array("status" => FALSE, "error" => "Condition Parameter <b>$parameter_name</b> is missing: <b>$required_value</b>");
                         }
                     }
                     array_push($this->conn["query"]["parameters"]["columns"], trim($parameter["name"]));
@@ -294,21 +305,22 @@ class PGSQLClient {
                     foreach ($this->required_parameter_values as $required_value) {
                         if (!array_key_exists($required_value, $parameter)) {
                             $parameter_name = array_key_exists("name", $parameter) ? $parameter["name"] : "undefined";
-                            return Array("status" => FALSE, "error" => "Condition Parameter <b>$parameter_name</b> is missing: <b>$required_value</b>");
+                            return array("status" => FALSE, "error" => "Condition Parameter <b>$parameter_name</b> is missing: <b>$required_value</b>");
                         }
                     }
                     array_push($this->conn["query"]["parameters"], $parameter);
                 }
             }
         }
-        return Array("status" => TRUE, "error");
+        return array("status" => TRUE, "error");
     }
 
     /**
      * Get Query Parameters
      * @return array $parameters
      */
-    public function getQueryParameters() {
+    public function getQueryParameters()
+    {
         return $this->conn["query"]["parameters"];
     }
 
@@ -318,7 +330,8 @@ class PGSQLClient {
      * status (TRUE, FALSE)
      * error (string with last error)
      */
-    private function associateParameters() {
+    private function associateParameters()
+    {
 
         if ($this->associate["set"]) {
             $update_parameters = " SET ";
@@ -339,7 +352,7 @@ class PGSQLClient {
                     foreach ($this->required_associate_value as $associate_value) {
                         if (!array_key_exists($associate_value, $parameter)) {
                             $parameter_name = array_key_exists("name", $parameter) ? $parameter["name"] : "undefined";
-                            return Array("status" => FALSE, "error" => "Parameter <b>$parameter_name</b> is missing <b>$associate_value</b>");
+                            return array("status" => FALSE, "error" => "Parameter <b>$parameter_name</b> is missing <b>$associate_value</b>");
                         }
                     }
                     if (array_key_exists("clause", $parameter) && $parameter["clause"] != "") {
@@ -397,14 +410,14 @@ class PGSQLClient {
                     }
                 }
             } else {
-                return Array("status" => TRUE, "error" => "You must to specify a {column} or {set} label to build the returning expression");
+                return array("status" => TRUE, "error" => "You must to specify a {column} or {set} label to build the returning expression");
             }
 
             $returning_string = substr($returning_string, 0, -2);
             $this->conn["query"]["string"] = str_replace("{returning}", $returning_string, $this->conn["query"]["string"]);
         }
 
-        return Array("status" => TRUE, "error" => "");
+        return array("status" => TRUE, "error" => "");
     }
 
     /**
@@ -413,7 +426,8 @@ class PGSQLClient {
      * status (TRUE, FALSE)
      * error (string with last error)
      */
-    private function setBindParameters() {
+    private function setBindParameters()
+    {
         if ($this->associate["set"]) {
             foreach ($this->conn["query"]["parameters"]["set"] as $parameter) {
                 $result_bind = $this->bindParameter($parameter);
@@ -452,7 +466,7 @@ class PGSQLClient {
             }
         }
 
-        return Array("status" => TRUE, "error" => "");
+        return array("status" => TRUE, "error" => "");
     }
 
     /**
@@ -462,15 +476,16 @@ class PGSQLClient {
      * status (TRUE, FALSE)
      * error (string with last error)
      */
-    private function bindParameter(array $parameter = Array()) {
+    private function bindParameter(array $parameter = array())
+    {
         $parameter_raw_name = ':' . str_replace($this->invalid_parameter_chars, "", $parameter["name"]);
-        $parameter_value = ( $parameter["value"] == "" ) ? NULL : $parameter["value"];
-        $type = ( isset($parameter["type"]) ) ? $parameter["type"] : $this->getParameterType($parameter["value"]);
+        $parameter_value = ($parameter["value"] == "") ? NULL : $parameter["value"];
+        $type = (isset($parameter["type"])) ? $parameter["type"] : $this->getParameterType($parameter["value"]);
         $result_bind = $this->conn["statement_object"]->bindParam($parameter_raw_name, $parameter_value, $type);
         if (!$result_bind) {
-            return Array("status" => FALSE, "error" => "Error <b>{$this->conn["statement_object"]->errorCode()}</b> trying to Bind <b>{$parameter["name"]}</b>, make sure that you include it into the Query String");
+            return array("status" => FALSE, "error" => "Error <b>{$this->conn["statement_object"]->errorCode()}</b> trying to Bind <b>{$parameter["name"]}</b>, make sure that you include it into the Query String");
         }
-        return Array("status" => TRUE);
+        return array("status" => TRUE);
     }
 
     /**
@@ -479,9 +494,10 @@ class PGSQLClient {
      * status (TRUE, FALSE)
      * error (string with last error)
      */
-    private function prepareQuery() {
+    private function prepareQuery()
+    {
         if ($this->conn["query"]["string"] == "") {
-            return Array("status" => FALSE, "error" => "Query String is empty");
+            return array("status" => FALSE, "error" => "Query String is empty");
         }
 
         if ($this->associate["set"] || $this->associate["where"] || $this->associate["columns"] || $this->associate["values"]) {
@@ -499,16 +515,16 @@ class PGSQLClient {
 
         if (!$this->conn["statement_object"]) {
             $array_error = $this->conn["conn_object"]->errorInfo();
-            $error = Array("string" => "Internal Error while trying to execute Query");
+            $error = array("string" => "Internal Error while trying to execute Query");
             if (is_array($array_error) && COUNT($array_error) > 0) {
-                $error = Array(
+                $error = array(
                     "string" => "SQLSTATE error code -- " . $array_error[0] . " <br>Driver-specific error code -- " . $array_error[1] . " <br>Driver-specific error message -- " . $array_error[2],
                     "message" => $array_error[2],
                     "sqlstate_code" => $array_error[0],
                     "driver_code" => $array_error[1]
                 );
             }
-            return Array("status" => FALSE, "error" => $error);
+            return array("status" => FALSE, "error" => $error);
         }
         if (COUNT($this->conn["query"]["parameters"]) > 0) {
             $result_bind = $this->setBindParameters();
@@ -516,7 +532,7 @@ class PGSQLClient {
                 return $result_bind;
             }
         }
-        return Array("status" => TRUE, "error" => "");
+        return array("status" => TRUE, "error" => "");
     }
 
     /**
@@ -526,10 +542,11 @@ class PGSQLClient {
      * data (Fetch data from executing the specified query string)
      * error (string with last error)
      */
-    public function exec() {
+    public function exec()
+    {
         $result_connect = $this->connect();
         if (!$result_connect["status"]) {
-            return $this->errorResponse(Array("message" => $result_connect["error"]));
+            return $this->errorResponse(array("message" => $result_connect["error"]));
         }
 
         $result_prepare = $this->prepareQuery();
@@ -538,7 +555,7 @@ class PGSQLClient {
         }
 
         if (array_key_exists("db_schema", $this->conn["db_info"]) && is_string($this->conn["db_info"]["db_schema"]) && strpos($this->conn["query"]["string"], $this->conn["db_info"]["db_schema"]) === FALSE) {
-            $error = Array(
+            $error = array(
                 "string" => "It looks that you forgot to add the Schema name(<b>{$this->conn["db_info"]["db_schema"]}</b>) to the query String",
                 "message" => $array_error[2],
                 "sqlstate_code" => -1,
@@ -564,9 +581,9 @@ class PGSQLClient {
                 }
             }
 
-            $error = Array("string" => "Internal Error while trying to execute Query");
+            $error = array("string" => "Internal Error while trying to execute Query");
             if (is_array($array_error) && COUNT($array_error) > 0) {
-                $error = Array(
+                $error = array(
                     "string" => "SQLSTATE error code -- " . $array_error[0] . " <br>Driver-specific error code -- " . $array_error[1] . " <br>Driver-specific error message -- " . $array_error[2],
                     "message" => $array_error[2],
                     "sqlstate_code" => $array_error[0],
@@ -586,7 +603,8 @@ class PGSQLClient {
      * @param array $parameters
      * @return response from "PGSQLClient::exec"
      */
-    public function execQueryString($query = "", array $parameters = Array()) {
+    public function execQueryString($query = "", array $parameters = array())
+    {
         $result_set_query = $this->setQuery($query);
         if (!$result_set_query["status"]) {
             return $result_set_query;
@@ -609,11 +627,12 @@ class PGSQLClient {
      * data (empty)
      * error (a valid error message)
      */
-    private function errorResponse(array $error = Array()) {
+    private function errorResponse(array $error = array())
+    {
         if (!is_array($error) || COUNT($error) == 0) {
             throw new \Exception("You must to specify a valid error to return the Postgres Response");
         }
-        $result = Array("status" => FALSE, "query" => "", "data" => (isset($error['message'])) ? $error['message'] : Array(), "error" => $error);
+        $result = array("status" => FALSE, "query" => "", "data" => (isset($error['message'])) ? $error['message'] : array(), "error" => $error);
         if ($this->conn["query"]["string"] != "") {
             $result["query"] = $this->conn["query"]["string"];
         }
@@ -629,8 +648,6 @@ class PGSQLClient {
             if (isset($result['query'])) {
                 $error_desc = $result['query'];
             }
-            $EmailModel = new EmailModel();
-            $EmailModel->notify_server_error($result['data'], $error_desc, $error_code);
         }
         unset($result['query']);
         unset($result['error']);
@@ -646,11 +663,12 @@ class PGSQLClient {
      * data (a valid array result of the query execution)
      * error (empty)
      */
-    private function successResponse($data = "") {
+    private function successResponse($data = "")
+    {
         if (!is_array($data)) {
             throw new \Exception("You must to specify a valid data array to return the Postgres Response");
         }
-        $result = Array("status" => TRUE, "query" => "", "data" => $data, "error" => "");
+        $result = array("status" => TRUE, "query" => "", "data" => $data, "error" => "");
         if ($this->conn["query"]["string"] != "") {
             $result["query"] = $this->conn["query"]["string"];
         }
@@ -661,5 +679,4 @@ class PGSQLClient {
         unset($result['error']);
         return $result;
     }
-
 }
